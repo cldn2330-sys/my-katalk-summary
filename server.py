@@ -112,3 +112,6 @@ if __name__ == '__main__':
     threading.Thread(target=run_schedule, daemon=True).start()
     # 웹 서버 실행 (같은 와이파이 네트워크 내부 접근 가능하도록 0.0.0.0 설정)
     app.run(host='0.0.0.0', port=5000)
+    @app.route('/', methods=['GET'])
+def home():
+    return "카톡 요약 서버가 정상 작동 중입니다! 🚀", 200
