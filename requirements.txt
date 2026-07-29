@@ -3,3 +3,4 @@ google-genai
 requests
 schedule
 gunicorn
+google-generativeai
