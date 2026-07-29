@@ -10,7 +10,7 @@ app = Flask(__name__)
 # ==========================================
 # GEMINI_API_KEY = "여기에_GEMINI_API_키"
 # KAKAO_ACCESS_TOKEN = "여기에_카카오_ACCESS_TOKEN"
-GEMINI_API_KEY = "AQ.Ab8RN6IM_gYDqPSwr2I903EO1q-rBz03ACy8D3dGbkNvs2w20w"       # Gemini API 키
+GEMINI_API_KEY = "AQ.Ab8RN6IlRJ6T2A3lpfU0d7_h3z4Q6dDQkUo_-onIMcrWIgw_Yw"       # Gemini API 키
 KAKAO_ACCESS_TOKEN = "GE2WjHb6cdjtwCcr2YvC2rCqe8BU5Q7hAAAAAQoNH9EAAAGfrPY-41R13198v8Zc" # 카카오 Access Token
 # ==========================================
 
