@@ -10,8 +10,8 @@ import threading
 app = Flask(__name__)
 
 # --- 설정 영역 ---
-GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"       # Gemini API 키
-KAKAO_ACCESS_TOKEN = "YOUR_KAKAO_ACCESS_TOKEN" # 카카오 Access Token
+GEMINI_API_KEY = "406da757547c15c1b7fe132266d05cf3"       # Gemini API 키
+KAKAO_ACCESS_TOKEN = "12h3RwA7PNWQPgbczWQth_YgiVYrc7yNAAAAAQoNFZsAAAGfrN6pflR13198v8Zc" # 카카오 Access Token
 DB_NAME = "katalk_messages.db"
 
 # DB 초기화
