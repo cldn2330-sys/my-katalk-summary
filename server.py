@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 # --- 설정 영역 ---
 GEMINI_API_KEY = "406da757547c15c1b7fe132266d05cf3"       # Gemini API 키
-KAKAO_ACCESS_TOKEN = "llVyDdjYDlK0w6s-XkihIeuut8cfRnFpAAAAAQoXBi4AAAGfrPR0nlR13198v8Zc" # 카카오 Access Token
+KAKAO_ACCESS_TOKEN = "GE2WjHb6cdjtwCcr2YvC2rCqe8BU5Q7hAAAAAQoNH9EAAAGfrPY-41R13198v8Zc" # 카카오 Access Token
 DB_NAME = "katalk_messages.db"
 
 # DB 초기화
