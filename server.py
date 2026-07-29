@@ -29,7 +29,8 @@ def receive_message():
 # Gemini REST API 직접 호출 (최신 gemini-2.0-flash 적용)
 def call_gemini_api(prompt_text):
     # gemini-2.0-flash 모델 엔드포인트 사용
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+   # url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
     headers = {"Content-Type": "application/json"}
     payload = {
         "contents": [{
