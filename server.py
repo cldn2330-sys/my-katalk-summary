@@ -1,12 +1,17 @@
 import os
 from flask import Flask, request, jsonify
 import requests
+import google.generativeai as genai
 
 app = Flask(__name__)
 
 # Render Environment Variables에서 키를 읽어옵니다.
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 KAKAO_ACCESS_TOKEN = os.environ.get("KAKAO_ACCESS_TOKEN", "")
+
+# Gemini SDK 설정
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 messages_store = []
 
@@ -26,29 +31,15 @@ def receive_message():
     except Exception as e:
         return jsonify({"status": "error", "details": str(e)}), 500
 
-# Gemini REST API 직접 호출 (무료 티어 표준 URL 적용)
+# Gemini 공식 SDK 사용 요약 함수
 def call_gemini_api(prompt_text):
-    # v1 표준 엔드포인트 사용 (404 에러 원천 차단)
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    # 가장 기본적이고 안정적인 무료 티어 모델
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    response = model.generate_content(prompt_text)
     
-    headers = {"Content-Type": "application/json"}
-    payload = {
-        "contents": [{
-            "parts": [{"text": prompt_text}]
-        }]
-    }
-    
-    response = requests.post(url, headers=headers, json=payload)
-    res_data = response.json()
-    
-    if response.status_code == 200:
-        try:
-            return res_data['candidates'][0]['content']['parts'][0]['text']
-        except (KeyError, IndexError):
-            return "요약 결과 형식을 해석할 수 없습니다."
-    else:
-        error_msg = res_data.get('error', {}).get('message', '알 수 없는 오류')
-        raise Exception(f"Gemini API 오류 ({response.status_code}): {error_msg}")
+    if response and response.text:
+        return response.text
+    return "요약 결과를 생성하지 못했습니다."
 
 def summarize_and_send():
     if not messages_store:
