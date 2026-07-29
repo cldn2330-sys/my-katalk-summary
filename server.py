@@ -49,7 +49,8 @@ def summarize_and_send():
         text_to_summarize = "\n".join(formatted_list)
     
     # Gemini AI 요약 생성
-    model = genai.GenerativeModel('gemini-1.5-flash')
+   # model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
     prompt = f"다음 카카오톡 메시지들을 핵심 내용 위주로 읽기 쉽게 3줄 이내로 요약해줘:\n\n{text_to_summarize}"
     
     response = model.generate_content(prompt)
