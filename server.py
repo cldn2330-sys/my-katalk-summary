@@ -5,59 +5,38 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# ==========================================
-# 🔑 핵심 설정 영역 (본인의 키값으로 수정해주세요)
-# ==========================================
-# GEMINI_API_KEY = "여기에_GEMINI_API_키"
-# KAKAO_ACCESS_TOKEN = "여기에_카카오_ACCESS_TOKEN"
-GEMINI_API_KEY = "AQ.Ab8RN6IlRJ6T2A3lpfU0d7_h3z4Q6dDQkUo_-onIMcrWIgw_Yw"       # Gemini API 키
-KAKAO_ACCESS_TOKEN = "GE2WjHb6cdjtwCcr2YvC2rCqe8BU5Q7hAAAAAQoNH9EAAAGfrPY-41R13198v8Zc" # 카카오 Access Token
-# ==========================================
+# Render의 Environment Variables에서 키를 불러옵니다.
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_KEY")
+KAKAO_ACCESS_TOKEN = os.environ.get("KAKAO_ACCESS_TOKEN", "YOUR_KAKAO_TOKEN")
 
-# Gemini API 설정
 genai.configure(api_key=GEMINI_API_KEY)
-
-# 메시지 수집용 메모리 (임시 저장)
 messages_store = []
 
 @app.route('/')
 def home():
-    return "카톡 요약 서버가 클라우드에서 정상 가동 중입니다! 🚀", 200
+    return "Kakao Summary Server is Running!", 200
 
-# 1. MacroDroid에서 메시지 수신받는 주소
 @app.route('/api/message', methods=['POST'])
 def receive_message():
-    try:
-        data = request.json
-        if data:
-            messages_store.append(data)
-            return jsonify({"status": "success", "message": "Saved"}), 200
-        return jsonify({"status": "error", "message": "No data received"}), 400
-    except Exception as e:
-        return jsonify({"status": "error", "details": str(e)}), 500
+    data = request.json
+    if data:
+        messages_store.append(data)
+        return jsonify({"status": "success", "message": "Saved"}), 200
+    return jsonify({"status": "error", "message": "No data"}), 400
 
-# 2. 요약 생성 및 카카오톡 나와의 채팅방 발송 함수
 def summarize_and_send():
     if not messages_store:
-        text_to_summarize = "오늘 수집된 새로운 카카오톡 메시지가 없습니다."
+        text_to_summarize = "오늘 수집된 메시지가 없습니다. 수동 테스트 진행 중입니다."
     else:
-        formatted_list = []
-        for m in messages_store:
-            sender = m.get('sender', '알수없음')
-            msg = m.get('message', '')
-            formatted_list.append(f"[{sender}] {msg}")
-        text_to_summarize = "\n".join(formatted_list)
+        text_to_summarize = "\n".join([f"[{m.get('sender', '알수없음')}] {m.get('message', '')}" for m in messages_store])
     
-    # Gemini AI 요약 생성
-   # model = genai.GenerativeModel('gemini-1.5-flash')
-    # model = genai.GenerativeModel('gemini-2.5-flash')
-    model = genai.GenerativeModel('gemini-2.0-flash')
-    prompt = f"다음 카카오톡 메시지들을 핵심 내용 위주로 읽기 쉽게 3줄 이내로 요약해줘:\n\n{text_to_summarize}"
+    # 무료 티어 쿼터 제한이 없는 가장 안정적인 표준 모델명 사용
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    prompt = f"다음 카카오톡 메시지들을 핵심 위주로 읽기 쉽게 3줄 이내로 요약해줘:\n\n{text_to_summarize}"
     
     response = model.generate_content(prompt)
     summary_text = response.text if response else "요약 생성 실패"
 
-    # 카카오톡 나와의 채팅방 전송 API 호출
     kakao_url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
     headers = {
         "Authorization": f"Bearer {KAKAO_ACCESS_TOKEN}",
@@ -70,7 +49,6 @@ def summarize_and_send():
     res = requests.post(kakao_url, headers=headers, data=payload)
     return res.json()
 
-# 3. 수동 테스트 실행 주소
 @app.route('/api/test_summary', methods=['GET'])
 def test_summary():
     try:
