@@ -122,3 +122,8 @@ if __name__ == '__main__':
     # 스케줄러 쓰레드 실행
     threading.Thread(target=run_schedule, daemon=True).start()
     app.run(host='0.0.0.0', port=5000)
+
+@app.route('/api/test_summary', methods=['GET'])
+def test_summary():
+    summarize_and_send()
+    return jsonify({"status": "success", "message": "요약 발송 완료"}), 200
