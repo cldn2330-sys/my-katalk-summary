@@ -26,9 +26,10 @@ def receive_message():
     except Exception as e:
         return jsonify({"status": "error", "details": str(e)}), 500
 
-# Gemini REST API 직접 호출 (가장 안정적인 gemini-1.5-flash-8b 적용)
+# Gemini REST API 직접 호출 (최신 gemini-2.0-flash 적용)
 def call_gemini_api(prompt_text):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key={GEMINI_API_KEY}"
+    # gemini-2.0-flash 모델 엔드포인트 사용
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
     headers = {"Content-Type": "application/json"}
     payload = {
         "contents": [{
