@@ -2,6 +2,7 @@ import json
 import os
 import requests
 from flask import Flask, jsonify, request
+import google.generativeai as genai
 
 app = Flask(__name__)
 
@@ -9,8 +10,9 @@ app = Flask(__name__)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 KAKAO_ACCESS_TOKEN = os.environ.get("KAKAO_ACCESS_TOKEN", "")
 
-# 외부 환경변수 설정을 무시하고 무료 티어 안정 모델로 강제 고정
-GEMINI_MODEL = "gemini-1.5-flash"
+# Gemini SDK 설정
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 messages_store = []
 
@@ -38,28 +40,15 @@ def call_gemini_api(prompt_text):
     if not GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY가 Render 환경변수에 설정되지 않았습니다.")
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-    
-    payload = {
-        "contents": [{"parts": [{"text": prompt_text}]}],
-        "generationConfig": {"maxOutputTokens": 300, "temperature": 0.3},
-    }
-
-    response = requests.post(url, json=payload, timeout=30)
     try:
-        response_data = response.json()
-    except ValueError:
-        response.raise_for_status()
-        raise RuntimeError("Gemini API가 JSON이 아닌 응답을 반환했습니다.")
-
-    if not response.ok:
-        detail = response_data.get("error", {}).get("message", "알 수 없는 오류")
-        raise RuntimeError(f"Gemini API 오류 ({response.status_code}): {detail}")
-
-    try:
-        return response_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except (KeyError, IndexError, TypeError):
-        raise RuntimeError("Gemini 요약 결과 형식을 해석할 수 없습니다.")
+        # SDK를 사용하여 가장 안정적으로 모델 호출
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt_text)
+        if response and response.text:
+            return response.text.strip()
+        raise RuntimeError("Gemini 요약 결과가 비어 있습니다.")
+    except Exception as e:
+        raise RuntimeError(f"Gemini API 오류: {str(e)}")
 
 def send_kakao_memo(summary_text):
     if not KAKAO_ACCESS_TOKEN:
