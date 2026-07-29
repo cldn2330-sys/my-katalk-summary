@@ -1,29 +1,25 @@
 import json
 import os
-
 import requests
 from flask import Flask, jsonify, request
 
-
 app = Flask(__name__)
 
-# Render 환경 변수에서 설정합니다.
+# Render 환경 변수
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-# GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
 KAKAO_ACCESS_TOKEN = os.environ.get("KAKAO_ACCESS_TOKEN", "")
 
-messages_store = []
+# 외부 환경변수 설정을 무시하고 무료 티어 안정 모델로 강제 고정
+GEMINI_MODEL = "gemini-1.5-flash"
 
+messages_store = []
 
 @app.get("/")
 def home():
     return "카톡 요약 서버가 클라우드에서 정상 가동 중입니다! 🚀", 200
 
-
 @app.post("/api/message")
 def receive_message():
-    """MacroDroid가 보낸 {sender, message} 형식의 메시지를 저장합니다."""
     data = request.get_json(silent=True)
     if not isinstance(data, dict):
         return jsonify({"status": "error", "message": "JSON 객체가 필요합니다."}), 400
@@ -38,16 +34,12 @@ def receive_message():
     })
     return jsonify({"status": "success", "message": "Saved", "count": len(messages_store)}), 200
 
-
 def call_gemini_api(prompt_text):
-    """Gemini generateContent REST API로 요약을 생성합니다."""
     if not GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY가 Render 환경변수에 설정되지 않았습니다.")
 
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-    )
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    
     payload = {
         "contents": [{"parts": [{"text": prompt_text}]}],
         "generationConfig": {"maxOutputTokens": 300, "temperature": 0.3},
@@ -69,9 +61,7 @@ def call_gemini_api(prompt_text):
     except (KeyError, IndexError, TypeError):
         raise RuntimeError("Gemini 요약 결과 형식을 해석할 수 없습니다.")
 
-
 def send_kakao_memo(summary_text):
-    """생성한 요약을 카카오톡 '나와의 채팅'으로 보냅니다."""
     if not KAKAO_ACCESS_TOKEN:
         raise ValueError("KAKAO_ACCESS_TOKEN이 Render 환경변수에 설정되지 않았습니다.")
 
@@ -97,7 +87,6 @@ def send_kakao_memo(summary_text):
         raise RuntimeError(f"카카오 API 오류 ({response.status_code}): {detail}")
     return response_data
 
-
 def summarize_and_send():
     if messages_store:
         text_to_summarize = "\n".join(
@@ -113,7 +102,6 @@ def summarize_and_send():
     )
     return send_kakao_memo(call_gemini_api(prompt))
 
-
 @app.get("/api/test_summary")
 def test_summary():
     try:
@@ -121,7 +109,6 @@ def test_summary():
         return jsonify({"status": "success", "kakao_response": result}), 200
     except (ValueError, RuntimeError, requests.RequestException) as error:
         return jsonify({"status": "error", "details": str(error)}), 500
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "10000"))
